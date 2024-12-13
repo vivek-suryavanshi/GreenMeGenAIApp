@@ -5,12 +5,16 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import pandas as pd
 
-# API Key for Carbon Interface (replace with your actual key)
-CARBON_API_KEY = "8IVCtOEs8PMRDCd59jLJdg"
-COHERE_API_KEY = "KncLsxR9e2jQgwdZmvgNhRyC63p5GJqXZWVifC1z"
+# Fetch API keys from Streamlit secrets
+CARBON_API_KEY = st.secrets["CARBON_API_KEY"]
+COHERE_API_KEY = st.secrets["COHERE_API_KEY"]
 
 # Initialize the Cohere LLM
-llm = Cohere(cohere_api_key=COHERE_API_KEY)
+try:
+    llm = Cohere(cohere_api_key=COHERE_API_KEY)
+except Exception as e:
+    st.error(f"Failed to initialize Cohere LLM: {e}")
+    st.stop()
 
 # Define a LangChain prompt template for sustainability recommendations
 prompt_template = PromptTemplate(
@@ -48,7 +52,7 @@ def calculate_electricity_emissions(electricity_usage_kwh: float):
         result = response.json()
         return result["data"]["attributes"]["carbon_mt"] * 1000  # Convert metric tons to kilograms
     except Exception as e:
-        st.error(f"Error fetching emissions data: {e}")
+        st.error(f"Error fetching electricity emissions: {e}")
         return 0.0
 
 # Set up Streamlit app
@@ -111,11 +115,12 @@ if st.sidebar.button("Generate Insights"):
     }
 
     # Generate recommendations
-    recommendations = llm_chain.run(inputs)
-
-    # Display recommendations
-    st.subheader("Recommendations")
-    st.write(recommendations)
+    try:
+        recommendations = llm_chain.run(inputs)
+        st.subheader("Recommendations")
+        st.write(recommendations)
+    except Exception as e:
+        st.error(f"Error generating insights: {e}")
 
 else:
     st.info("Enter your details in the sidebar and click 'Generate Insights' to get started!")
