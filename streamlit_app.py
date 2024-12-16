@@ -16,25 +16,42 @@ except Exception as e:
     st.error(f"Failed to initialize Cohere LLM: {e}")
     st.stop()
 
-# Define a LangChain prompt template for sustainability recommendations
+# Define a LangChain prompt template for eco insights
 prompt_template = PromptTemplate(
     input_variables=[
-        "name", "location", "household_size", "electricity_emissions",
-        "renewable_usage", "water_usage", "travel_emissions", "vehicle_type",
-        "waste_generated", "recycling_habits"
+        "nickname", "region", "family_size", "energy_emissions",
+        "renewable_ratio", "water_consumption", "commute_emissions", "transport_mode",
+        "weekly_waste", "recycle_types"
     ],
     template="""
-    Generate sustainability recommendations for a user named {name}, living in {location}, with a household size of {household_size}. 
-    Their electricity usage results in {electricity_emissions} kg of CO2 emissions per month, and {renewable_usage}% of their energy is from renewable sources.
-    They consume {water_usage} liters of water monthly. Their travel contributes {travel_emissions} kg of CO2 emissions monthly using a {vehicle_type}.
-    They generate {waste_generated} kg of waste weekly and recycle materials such as {recycling_habits}.
+    Generate a detailed sustainability lifestyle report for {nickname}, who resides in {region} with a household of {family_size} members. 
+    Their current lifestyle details are:
+    - Energy usage contributing to {energy_emissions} kg of CO2 emissions monthly, with {renewable_ratio}% from renewables.
+    - Water usage of {water_consumption} liters monthly.
+    - Weekly travel of {commute_emissions} km using {transport_mode}, contributing to travel emissions.
+    - Waste generation of {weekly_waste} kg weekly, with recycling of {recycle_types}.
 
-    Provide actionable insights to improve sustainability across energy usage, water conservation, transportation, and waste management.
+    **Provide recommendations to improve their sustainability practices and reduce carbon footprint across:**
+
+    1. **Energy**:
+        - Suggest innovative methods to reduce energy emissions and reliance on non-renewables.
+    2. **Water**:
+        - Provide tips for conserving water and reducing wasteful consumption.
+    3. **Transportation**:
+        - Highlight actionable strategies to minimize travel emissions considering {transport_mode} and {commute_emissions}.
+    4. **Waste Management**:
+        - Recommend ways to reduce {weekly_waste} kg of waste and improve recycling of {recycle_types}.
+
+    Ensure that all suggestions are:
+    - Context-specific to {nickname}'s household size, region, and current practices.
+    - Measurable with clear outcomes (e.g., CO2 savings, cost reductions, or water saved).
+    - Balanced in environmental impact and practicality.
     """
 )
 
-# Function to calculate electricity emissions using the Carbon Interface API
-def calculate_electricity_emissions(electricity_usage_kwh: float):
+
+# Function to calculate electricity emissions
+def calculate_emissions(usage_kwh: float, country_code: str = "US"):
     try:
         url = "https://www.carboninterface.com/api/v1/estimates"
         headers = {
@@ -44,83 +61,86 @@ def calculate_electricity_emissions(electricity_usage_kwh: float):
         data = {
             "type": "electricity",
             "electricity_unit": "kwh",
-            "electricity_value": electricity_usage_kwh,
-            "country": "US"  # Change to the user's country
+            "electricity_value": usage_kwh,
+            "country": country_code
         }
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
         result = response.json()
-        return result["data"]["attributes"]["carbon_mt"] * 1000  # Convert metric tons to kilograms
+        return result["data"]["attributes"]["carbon_mt"] * 1000  # Convert metric tons to kg
     except Exception as e:
-        st.error(f"Error fetching electricity emissions: {e}")
+        st.error(f"Error fetching emissions data: {e}")
         return 0.0
 
 # Set up Streamlit app
-st.set_page_config(page_title="Sustainability Insights with AI", layout="wide")
-st.title("🌱 Sustainability Insights")
+st.set_page_config(page_title="GreenMe", layout="wide")
+st.title("🌍 GreenMe - Reduce Your Carbon Footprint")
+
+st.markdown("""
+    Welcome to **GreenMe**, your personal eco-assistant.  
+    Our goal is to help you understand and **reduce your carbon footprint** while making sustainable choices for a greener future. 🌱  
+""")
 
 # Sidebar for user inputs
 st.sidebar.header("Enter Your Details")
-name = st.sidebar.text_input("Name")
-location = st.sidebar.text_input("Location")
-household_size = st.sidebar.number_input("Household Size", min_value=1, step=1)
+nickname = st.sidebar.text_input("Nickname")
+region = st.sidebar.text_input("Region")
+family_size = st.sidebar.number_input("Family Size", min_value=1, step=1)
 
-st.sidebar.subheader("Energy Consumption")
-electricity_usage = st.sidebar.number_input("Monthly Electricity Usage (kWh)", min_value=0.0, step=0.1)
-renewable_usage = st.sidebar.slider("Percentage from Renewable Energy", 0, 100)
+st.sidebar.subheader("Energy Details")
+energy_usage = st.sidebar.number_input("Monthly Energy Use (kWh)", min_value=0.0, step=0.1)
+renewable_ratio = st.sidebar.slider("Renewable Energy Usage (%)", 0, 100)
 
-st.sidebar.subheader("Water Consumption")
-water_usage = st.sidebar.number_input("Monthly Water Consumption (liters)", min_value=0.0, step=0.1)
+st.sidebar.subheader("Water Usage")
+water_consumption = st.sidebar.number_input("Monthly Water Use (liters)", min_value=0.0, step=0.1)
 
-st.sidebar.subheader("Transportation")
-travel_kms = st.sidebar.number_input("Average Weekly Travel (km)", min_value=0.0, step=0.1)
-vehicle_type = st.sidebar.selectbox("Vehicle Type", ["Petrol", "Diesel", "Electric", "Hybrid", "Public Transport"])
+st.sidebar.subheader("Commute Info")
+commute_distance = st.sidebar.number_input("Weekly Commute (km)", min_value=0.0, step=0.1)
+transport_mode = st.sidebar.selectbox("Mode of Transport", ["Car", "Bike", "Bus", "Train", "Electric Vehicle"])
 
-st.sidebar.subheader("Waste Management")
-waste_generated = st.sidebar.number_input("Weekly Waste Generated (kg)", min_value=0.0, step=0.1)
-recycling_habits = st.sidebar.multiselect("Materials You Recycle", ["Plastic", "Glass", "Paper", "Metal", "Other"])
+st.sidebar.subheader("Waste Details")
+weekly_waste = st.sidebar.number_input("Weekly Waste (kg)", min_value=0.0, step=0.1)
+recycle_types = st.sidebar.multiselect("Recycled Materials", ["Plastic", "Glass", "Paper", "E-waste", "Other"])
 
 # Main area for insights
-st.header("Your Sustainability Insights")
+st.header("Your Eco Insights")
 
-if st.sidebar.button("Generate Insights"):
+if st.sidebar.button("Generate Tips"):
     # Calculate emissions
-    electricity_emissions = calculate_electricity_emissions(electricity_usage)
-    travel_emissions = travel_kms * 0.12  # Example calculation: 0.12 kg CO2 per km
+    energy_emissions = calculate_emissions(energy_usage)
+    commute_emissions = commute_distance * 0.12  # 0.12 kg CO2 per km
 
-    # Display results in a chart
+    # Display chart
     st.subheader("Carbon Footprint Breakdown")
     data = {
-        "Category": ["Electricity", "Travel"],
-        "CO2 Emissions (kg)": [electricity_emissions, travel_emissions]
+        "Category": ["Energy", "Commute"],
+        "CO2 Emissions (kg)": [energy_emissions, commute_emissions]
     }
     df = pd.DataFrame(data)
     st.bar_chart(df.set_index("Category"))
 
-    # Build the chain using LangChain
+    # LangChain for insights
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
 
-    # Collect all inputs for the prompt
     inputs = {
-        "name": name,
-        "location": location,
-        "household_size": household_size,
-        "electricity_emissions": electricity_emissions,
-        "renewable_usage": renewable_usage,
-        "water_usage": water_usage,
-        "travel_emissions": travel_emissions,
-        "vehicle_type": vehicle_type,
-        "waste_generated": waste_generated,
-        "recycling_habits": ", ".join(recycling_habits) if recycling_habits else "none"
+        "nickname": nickname,
+        "region": region,
+        "family_size": family_size,
+        "energy_emissions": energy_emissions,
+        "renewable_ratio": renewable_ratio,
+        "water_consumption": water_consumption,
+        "commute_emissions": commute_emissions,
+        "transport_mode": transport_mode,
+        "weekly_waste": weekly_waste,
+        "recycle_types": ", ".join(recycle_types) if recycle_types else "none"
     }
 
-    # Generate recommendations
     try:
-        recommendations = llm_chain.run(inputs)
-        st.subheader("Recommendations")
-        st.write(recommendations)
+        insights = llm_chain.run(inputs)
+        st.subheader("Eco-Friendly Tips")
+        st.write(insights)
     except Exception as e:
-        st.error(f"Error generating insights: {e}")
+        st.error(f"Error generating tips: {e}")
 
 else:
-    st.info("Enter your details in the sidebar and click 'Generate Insights' to get started!")
+    st.info("Enter details in the sidebar and click 'Generate Tips'!")
