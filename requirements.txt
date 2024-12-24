@@ -4,3 +4,4 @@ pandas
 langchain
 cohere
 langchain-community
+supabase
