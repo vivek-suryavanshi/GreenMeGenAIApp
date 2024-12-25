@@ -30,9 +30,7 @@ GreenMe is a Generative AI-powered app designed to act as your eco-assistant, he
 	•	Carbon Interface API: Delivers precise emission calculations.
 
 
-🎥 Demo
-
-[Include a link to a short app demo video or GIF]
+🎥 Demo - https://youtu.be/gEyCFAyBR6U?si=0baJS11hK5YpAguB
 
 🖇️ Acknowledgments
 
