@@ -80,7 +80,7 @@ def static_emissions_formula(usage_kwh):
 # Electricity emissions calculation
 def calculate_emissions(usage_kwh: float, country_code: str = "US"):
     api_usage = track_api_usage()
-    if api_usage >= 3:  # Limit API usage to 3 calls per day
+    if api_usage >= 15:  # Limit API usage to 15 calls per day
         st.warning("API limit reached! Using static calculation.")
         return static_emissions_formula(usage_kwh)
 
