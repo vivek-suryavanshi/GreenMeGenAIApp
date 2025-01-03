@@ -1,17 +1,14 @@
 # GreenMe - Reduce Your Carbon Footprint
 
+**Welcome to GreenMe, your personal eco-assistant.**
+
+GreenMe is a Generative AI-powered app designed to act as your eco-assistant, helping you understand and reduce your carbon footprint while making informed, sustainable choices. With tailored insights crafted specifically for your unique lifestyle, GreenMe empowers you to embrace greener habits. 🌱
+
 **Now Featured on Official Langchain Linkedin Page !!!**
 https://www.linkedin.com/posts/langchain_greenme-ai-eco-assistant-meet-your-personal-activity-7280670953502613504-aJ5h?utm_source=share&utm_medium=member_desktop
 
 **My original post on Linkedn**
 https://www.linkedin.com/posts/vivek-suryavanshi_generativeai-genai-sustainability-activity-7277530992641253376-K0ef?utm_source=share&utm_medium=member_desktop
-
-
-
-
-**Welcome to GreenMe, your personal eco-assistant.**
-
-GreenMe is a Generative AI-powered app designed to act as your eco-assistant, helping you understand and reduce your carbon footprint while making informed, sustainable choices. With tailored insights crafted specifically for your unique lifestyle, GreenMe empowers you to embrace greener habits. 🌱
 
 
 
