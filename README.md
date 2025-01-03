@@ -7,7 +7,7 @@ GreenMe is a Generative AI-powered app designed to act as your eco-assistant, he
 **Now Featured on Official Langchain Linkedin Page !!!**
 https://www.linkedin.com/posts/langchain_greenme-ai-eco-assistant-meet-your-personal-activity-7280670953502613504-aJ5h?utm_source=share&utm_medium=member_desktop
 
-**My original post on Linkedn**
+**My original post on Linkedin :**
 https://www.linkedin.com/posts/vivek-suryavanshi_generativeai-genai-sustainability-activity-7277530992641253376-K0ef?utm_source=share&utm_medium=member_desktop
 
 
